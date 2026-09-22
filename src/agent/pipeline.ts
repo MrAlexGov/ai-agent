@@ -69,8 +69,9 @@ export function createPipeline(store: Store, transport: PipelineTransport) {
           await botSay(
             info.chatId,
             'Отлично, помогу оформить заявку! 📝\n' +
+              'Так вы попросите автора помочь с настройкой или подключением такого агента.\n' +
               'Напишите контакт для связи: телефон, email или @юзернейм в Telegram.\n' +
-              'Либо позовите менеджера сразу — /handoff'
+              'Либо позовите человека сразу — /handoff'
           );
         }
         return;
@@ -127,7 +128,7 @@ export function createPipeline(store: Store, transport: PipelineTransport) {
       info.chatId,
       `Заявка №${ticket.id} принята ✅\n` +
         `Тема: ${topic}\nКонтакт: ${contact}\n\n` +
-        `${INTENT_TOPIC.lead}: менеджер свяжется с вами в рабочее время (9:00–21:00 МСК).`
+        `${INTENT_TOPIC.lead}: автор свяжется с вами в рабочее время (9:00–21:00 МСК).`
     );
     await notifyOwnerTicket(ticket.id, info, 'lead', topic, contact, sourceText);
   }
@@ -152,8 +153,8 @@ export function createPipeline(store: Store, transport: PipelineTransport) {
     });
     await transport.send(
       info.chatId,
-      'Передаю диалог живому менеджеру 👨‍💼\n' +
-        'Он ответит здесь же в чате. Если удобнее — можно оставить контакт и менеджер свяжется сам.'
+      'Передаю диалог живому человеку (автору проекта) 👨‍💼\n' +
+        'Он ответит здесь же в чате. Если удобнее — можно оставить контакт и он свяжется сам.'
     );
     await notifyOwnerTicket(ticket.id, info, 'handoff', `${reason}. ${topic}`, null, sourceText);
   }
@@ -229,11 +230,11 @@ export function createPipeline(store: Store, transport: PipelineTransport) {
 
   function helloText(): string {
     return (
-      `Здравствуйте! 👋 Я AI-ассистент «${config.businessName}».\n` +
-      'Помогу с вопросами о компании, ценах и услугах.\n\n' +
+      `Здравствуйте! 👋 Я AI-агент — консультирую о себе самом.\n` +
+      'Расскажу, что умею и чего не умею, помогу с настройкой, запуском и деплоем.\n\n' +
       'Команды:\n' +
       '/menu — меню с быстрыми кнопками\n' +
-      '/handoff — позвать живого менеджера\n' +
+      '/handoff — позвать живого человека\n' +
       '/help — помощь'
     );
   }

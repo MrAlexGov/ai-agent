@@ -21,19 +21,33 @@ export const config = {
     baseUrl: process.env.LLM_BASE_URL ?? 'https://api.openai.com/v1',
     model: process.env.LLM_MODEL ?? 'gpt-4o-mini',
   },
-  dashboardPort: Number(process.env.DASHBOARD_PORT ?? 3000),
-  dashboardPassword: process.env.DASHBOARD_PASSWORD ?? '',
+  // Мини-сервис по умолчанию живёт на 3030 (Next-прокси и AGENT_SERVICE_URL
+  // ожидают именно его); 3000 в проде занят standalone-сервером Next.
+  dashboardPort: Number(process.env.DASHBOARD_PORT ?? 3030),
+  /** Дополнительные админы дашборда через запятую (владелец добавляется всегда). */
+  adminTelegramIds: (process.env.ADMIN_TELEGRAM_IDS ?? '')
+    .split(',')
+    .map((s) => Number(s.trim()))
+    .filter((n) => Number.isInteger(n) && n > 0),
+  /**
+   * Демо-вход в дашборд без Telegram — ТОЛЬКО для песочницы (бот не запущен,
+   * токена нет, подтверждать вход некому). В .env.prod не задавать!
+   */
+  devLogin: process.env.DASHBOARD_DEV_LOGIN === '1',
   /** Путь к базе знаний и к локальному JSON-хранилищу */
   knowledgeDir: path.resolve(process.cwd(), 'knowledge'),
   dataDir: path.resolve(process.cwd(), 'data'),
 };
 
-/** Проверка, что проект запускают из корня (рядом лежит knowledge/). */
+/**
+ * Проверка окружения. Отсутствие knowledge/ больше НЕ фатально (в прод-контейнере
+ * сервис может стартовать без БЗ — бот тогда отвечает фолбэком), только предупреждение.
+ */
 export function assertRuntimeEnv(): void {
   if (!fs.existsSync(config.knowledgeDir)) {
-    throw new Error(
-      `Не найдена папка базы знаний: ${config.knowledgeDir}\n` +
-        'Запускайте проект из корня репозитория (npm run dev).'
+    console.warn(
+      '[config] Папка базы знаний не найдена: %s — бот будет отвечать без БЗ (фолбэк).',
+      config.knowledgeDir
     );
   }
 }
