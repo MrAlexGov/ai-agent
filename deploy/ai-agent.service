@@ -1,0 +1,32 @@
+# systemd-юнит для запуска БЕЗ Docker.
+# Установка (под root или через sudo):
+#   1. Положите проект в /opt/ai-agent и выполните там: npm install
+#   2. Скопируйте файл: cp deploy/ai-agent.service /etc/systemd/system/
+#   3. systemctl daemon-reload
+#   4. systemctl enable --now ai-agent
+# Логи: journalctl -u ai-agent -f
+
+[Unit]
+Description=AI Agent — Telegram-бот поддержки + дашборд владельца
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Запуск от непривилегированного пользователя (создайте: useradd -r -s /bin/false agent)
+User=agent
+Group=agent
+WorkingDirectory=/opt/ai-agent
+ExecStart=/usr/bin/npm run start
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+
+# Небольшая гигиена безопасности
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

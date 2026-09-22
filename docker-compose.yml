@@ -1,0 +1,22 @@
+services:
+  ai-agent:
+    build: .
+    container_name: ai-agent
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Внутри контейнера дашборд всегда слушает 3000;
+      # наружный порт настраивается DASHBOARD_PORT в .env (см. маппинг ниже)
+      DASHBOARD_PORT: 3000
+    ports:
+      - "${DASHBOARD_PORT:-3000}:3000"
+    volumes:
+      # JSON-режим: данные переживают пересоздание контейнера.
+      # При переходе на Supabase/Postgres можно убрать.
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:3000/api/tickets >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
